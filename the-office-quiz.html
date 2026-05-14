@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qual personagem de The Office você é?</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --paper: #ede8dc;
+    --ink: #1a1208;
+    --faded-ink: #4a3f2e;
+    --accent: #c8490a;
+    --accent-light: #e8866a;
+    --muted: #8a7a65;
+    --stamp: #7a2010;
+    --blue: #2c4a7a;
+    --yellow: #d4a017;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    display: none;
+    position: relative;
+    z-index: 1;
+  }
+  .page.active { display: block; }
+
+  /* ===== INTRO PAGE ===== */
+  #intro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .dunder-header {
+    font-family: 'Special Elite', cursive;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    letter-spacing: 0.5em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+
+  .main-title {
+    font-family: 'Special Elite', cursive;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    line-height: 1;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.4s;
+  }
+
+  .main-title span { color: var(--accent); }
+
+  .subtitle {
+    font-size: clamp(0.95rem, 2vw, 1.15rem);
+    color: var(--faded-ink);
+    max-width: 480px;
+    line-height: 1.7;
+    margin: 1.5rem auto 2.5rem;
+    font-style: italic;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.6s;
+  }
+
+  .camera-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.3s;
+  }
+
+  .start-btn {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+    color: var(--cream);
+    background: var(--accent);
+    border: none;
+    padding: 1rem 2.8rem;
+    cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: background 0.2s, transform 0.15s;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.8s;
+    text-transform: uppercase;
+  }
+
+  .start-btn:hover {
+    background: var(--stamp);
+    transform: translateY(-2px);
+  }
+
+  .tape-line {
+    width: 120px;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, var(--muted) 0, var(--muted) 10px, transparent 10px, transparent 20px);
+    margin: 1.5rem auto;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.7s;
+  }
+
+  /* ===== QUIZ PAGE ===== */
+  #quiz {
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .quiz-inner {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .quiz-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px dashed var(--muted);
+  }
+
+  .quiz-brand {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .progress-info {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .progress-bar-outer {
+    width: 100%;
+    height: 5px;
+    background: var(--paper);
+    border-radius: 0;
+    margin-bottom: 2.5rem;
+    border: 1px solid #d0c8b8;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.5s ease;
+  }
+
+  .question-number {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .question-text {
+    font-size: clamp(1.1rem, 3vw, 1.45rem);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--paper);
+    border: 1.5px solid #d0c8b8;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: var(--accent);
+    transition: width 0.2s ease;
+  }
+
+  .option:hover::before { width: 4px; }
+
+  .option:hover {
+    border-color: var(--accent);
+    background: #f0ebe0;
+    transform: translateX(4px);
+  }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: #f5e8e0;
+  }
+
+  .option.selected::before { width: 4px; }
+
+  .option-letter {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    color: var(--accent);
+    min-width: 1.5rem;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .option-text {
+    font-size: 0.97rem;
+    line-height: 1.5;
+    color: var(--faded-ink);
+  }
+
+  .nav-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #d0c8b8;
+  }
+
+  .nav-btn {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    padding: 0.75rem 2rem;
+    border: 2px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .nav-btn:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .nav-btn.primary {
+    background: var(--accent);
+    color: var(--cream);
+    border-color: var(--accent);
+  }
+
+  .nav-btn.primary:hover:not(:disabled) {
+    background: var(--stamp);
+    border-color: var(--stamp);
+  }
+
+  .question-slide {
+    animation: slideIn 0.35s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ===== RESULT PAGE ===== */
+  #result {
+    min-height: 100vh;
+    padding: 3rem 1rem 5rem;
+  }
+
+  .result-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .result-label {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.85rem;
+    letter-spacing: 0.5em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .result-title {
+    font-family: 'Special Elite', cursive;
+    font-size: clamp(2rem, 7vw, 4rem);
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+    line-height: 1.1;
+  }
+
+  .result-role {
+    font-size: 1rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 2rem;
+    letter-spacing: 0.05em;
+  }
+
+  .result-emoji {
+    font-size: 5rem;
+    display: block;
+    margin: 1rem auto 1.5rem;
+    animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.3); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .result-divider {
+    width: 60px;
+    height: 2px;
+    background: var(--accent);
+    margin: 1.5rem auto;
+  }
+
+  .result-desc {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--faded-ink);
+    margin-bottom: 1.5rem;
+    text-align: left;
+  }
+
+  .traits-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+
+  .traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    justify-content: flex-start;
+  }
+
+  .trait {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.85rem;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .quote-box {
+    background: var(--paper);
+    border-left: 4px solid var(--accent);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 2.5rem;
+    text-align: left;
+  }
+
+  .quote-box p {
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--faded-ink);
+  }
+
+  .quote-box cite {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: normal;
+    letter-spacing: 0.05em;
+  }
+
+  .retry-btn {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    color: var(--cream);
+    background: var(--accent);
+    border: none;
+    padding: 0.9rem 2.5rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+
+  .retry-btn:hover { background: var(--stamp); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-reveal {
+    animation: fadeUp 0.6s ease forwards;
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro" class="page active">
+  <div class="camera-icon">🎥</div>
+  <div class="dunder-header">Dunder Mifflin · Scranton</div>
+  <h1 class="main-title">Qual personagem<br>de <span>The Office</span><br>você é?</h1>
+  <div class="tape-line"></div>
+  <p class="subtitle">A câmera não mente. Responda 12 perguntas e descubra qual funcionário da Dunder Mifflin você seria.</p>
+  <button class="start-btn" onclick="startQuiz()">▶ Começar</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="page">
+  <div class="quiz-inner">
+    <div class="quiz-topbar">
+      <span class="quiz-brand">🎥 The Office Quiz</span>
+      <span class="progress-info" id="progress-info">Pergunta 1 de 12</span>
+    </div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progress-bar" style="width:0%"></div>
+    </div>
+    <div id="question-area"></div>
+    <div class="nav-area">
+      <button class="nav-btn" id="btn-back" onclick="goBack()">← Voltar</button>
+      <button class="nav-btn primary" id="btn-next" onclick="goNext()">Próxima →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="page">
+  <div class="result-inner" id="result-inner"></div>
+</div>
+
+<script>
+// ============================================================
+//  QUIZ DATA
+// ============================================================
+// Each option maps to characters: michael, dwight, jim, pam, kevin, angela, ryan, kelly, stanley, toby
+const questions = [
+  {
+    text: "É segunda-feira de manhã. Você chega no trabalho e...",
+    options: [
+      { letter: "A", text: "Já planejou uma reunião motivacional épica para animar o time — com fanfarra e slides feitos à mão.", chars: { michael: 3 } },
+      { letter: "B", text: "Verificou duas vezes o sistema de segurança, atualizou seu diário de ameaças e já está no posto.", chars: { dwight: 3 } },
+      { letter: "C", text: "Chegou com cara de que já tem uma pegadinha preparada pro Dwight.", chars: { jim: 3 } },
+      { letter: "D", text: "Trouxe um desenho novo que ficou animado(a) para mostrar pra alguém.", chars: { pam: 3 } },
+      { letter: "E", text: "Já está contando as horas pro almoço.", chars: { stanley: 3, kevin: 2 } }
+    ]
+  },
+  {
+    text: "Tem um conflito no time. Como você reage?",
+    options: [
+      { letter: "A", text: "Tenta resolver sendo o mediador, mas acaba virando parte do problema.", chars: { michael: 3 } },
+      { letter: "B", text: "Apresenta um protocolo oficial de 47 páginas para resolução de conflitos.", chars: { dwight: 3 } },
+      { letter: "C", text: "Observa com um sorrisinho, faz um comentário certeiro pro lado e deixa rolar.", chars: { jim: 3 } },
+      { letter: "D", text: "Tenta ouvir os dois lados e encontrar um meio-termo justo.", chars: { pam: 3, toby: 2 } },
+      { letter: "E", text: "Escreve uma reclamação formal pra RH, mesmo que a situação não te envolva.", chars: { toby: 3, angela: 2 } }
+    ]
+  },
+  {
+    text: "Qual é sua relação com as regras do trabalho?",
+    options: [
+      { letter: "A", text: "As regras existem, mas você é a exceção — você cria o clima, não segue protocolos.", chars: { michael: 3 } },
+      { letter: "B", text: "Regras são a espinha dorsal da civilização. Você as conhece de cor e as faz valer.", chars: { dwight: 3 } },
+      { letter: "C", text: "Você as segue quando convém e as ignora com elegância quando não.", chars: { jim: 2, ryan: 2 } },
+      { letter: "D", text: "Você as respeita mas às vezes questiona baixinho se fazem sentido.", chars: { pam: 2, toby: 2 } },
+      { letter: "E", text: "Quais regras? Você faz o mínimo necessário para não ser demitido(a).", chars: { stanley: 3, kevin: 2 } }
+    ]
+  },
+  {
+    text: "Como você lida com críticas ao seu trabalho?",
+    options: [
+      { letter: "A", text: "Fica devastado(a) por dentro, mas finge que tudo bem e muda de assunto na velocidade da luz.", chars: { michael: 3 } },
+      { letter: "B", text: "Pergunta quem fez a crítica, questiona as credenciais dela e apresenta contra-evidências.", chars: { dwight: 3 } },
+      { letter: "C", text: "Sorri, concorda superficialmente, e continua exatamente igual.", chars: { jim: 2, ryan: 2 } },
+      { letter: "D", text: "Leva a sério, reflete com honestidade e tenta melhorar.", chars: { pam: 3 } },
+      { letter: "E", text: "Fica em silêncio, mas guarda o comentário por anos.", chars: { stanley: 3, toby: 2 } }
+    ]
+  },
+  {
+    text: "Você precisa dar uma notícia ruim a um colega. O que você faz?",
+    options: [
+      { letter: "A", text: "Enrola com histórias, vai na tangente, e eventualmente deixa a notícia escapar de forma dramática.", chars: { michael: 3 } },
+      { letter: "B", text: "Diz diretamente, sem rodeios, com documentação em mãos.", chars: { dwight: 3 } },
+      { letter: "C", text: "Encontra um jeito casual de falar que torna a coisa mais leve.", chars: { jim: 3 } },
+      { letter: "D", text: "Se preocupa muito antes, escolhe as palavras com cuidado e vai com empatia total.", chars: { pam: 3 } },
+      { letter: "E", text: "Manda um e-mail ou deixa pra outra pessoa fazer.", chars: { toby: 2, ryan: 2, kelly: 2 } }
+    ]
+  },
+  {
+    text: "Em uma festa da empresa, você está...",
+    options: [
+      { letter: "A", text: "No centro do salão sendo o anfitriã(ão) principal, querendo que todo mundo lembre daquela noite.", chars: { michael: 3 } },
+      { letter: "B", text: "Controlando a lista de convidados, o cardápio e avaliando ameaças em potencial.", chars: { dwight: 3 } },
+      { letter: "C", text: "Fazendo piadas, circulando, claramente se divertindo mais do que aparenta.", chars: { jim: 3 } },
+      { letter: "D", text: "Conversando com pessoas mais próximas, talvez ajudando a organizar algo.", chars: { pam: 3 } },
+      { letter: "E", text: "Vendo de longe, comendo, esperando acabar logo.", chars: { stanley: 3, toby: 2, kevin: 2 } }
+    ]
+  },
+  {
+    text: "Qual das frases abaixo mais combina com você?",
+    options: [
+      { letter: "A", text: "\"Sou mais que um chefe — sou um amigo, guru e estrela de cinema em potencial.\"", chars: { michael: 3 } },
+      { letter: "B", text: "\"Eficiência não é uma opção. É uma obrigação moral.\"", chars: { dwight: 3 } },
+      { letter: "C", text: "\"Tô bem aqui, obrigado. Só observando.\"", chars: { jim: 3 } },
+      { letter: "D", text: "\"Eu me importo com as pessoas ao meu redor, mesmo quando elas não percebem.\"", chars: { pam: 3 } },
+      { letter: "E", text: "\"Não é pessoal. É só que eu não quero fazer isso.\"", chars: { stanley: 3 } }
+    ]
+  },
+  {
+    text: "Como você age quando quer impressionar alguém?",
+    options: [
+      { letter: "A", text: "Faz uma referência pop culture fora de contexto, um discurso improvisado e uma dança.", chars: { michael: 3 } },
+      { letter: "B", text: "Lista suas conquistas, certificados e habilidades raras de sobrevivência.", chars: { dwight: 3 } },
+      { letter: "C", text: "Faz algo discreto e engraçado que deixa a pessoa querendo mais.", chars: { jim: 3 } },
+      { letter: "D", text: "Cria algo personalizado ou faz um gesto cuidadoso e atencioso.", chars: { pam: 3 } },
+      { letter: "E", text: "Investe pesado na imagem — roupas, vocabulário, looks estratégicos.", chars: { ryan: 3, kelly: 2 } }
+    ]
+  },
+  {
+    text: "Qual é seu estilo de trabalho ideal?",
+    options: [
+      { letter: "A", text: "Reuniões, apresentações, fazer conexões — o trabalho real pode esperar.", chars: { michael: 3 } },
+      { letter: "B", text: "Solo, com metas claras, sem interferência de amadores.", chars: { dwight: 3 } },
+      { letter: "C", text: "No próprio ritmo, com autonomia e uma pitada de improviso.", chars: { jim: 3 } },
+      { letter: "D", text: "Colaborativo, criativo, com espaço pra crescer.", chars: { pam: 3 } },
+      { letter: "E", text: "O mínimo possível, com o máximo de tempo sobrando.", chars: { stanley: 3, kevin: 2 } }
+    ]
+  },
+  {
+    text: "Como você se sente em relação a networking e política corporativa?",
+    options: [
+      { letter: "A", text: "Adora — você vive pra isso, mesmo sem muito estratégia.", chars: { michael: 3 } },
+      { letter: "B", text: "Acha importante, mas prefere hierarquia clara e meritocracia pura.", chars: { dwight: 3 } },
+      { letter: "C", text: "Joga o jogo quando precisa, mas prefere não depender disso.", chars: { jim: 2, ryan: 2 } },
+      { letter: "D", text: "Prefere relações genuínas a estratégia calculada.", chars: { pam: 3 } },
+      { letter: "E", text: "Você é completamente alheio(a) a isso — e tá tudo bem.", chars: { kevin: 3, stanley: 2 } }
+    ]
+  },
+  {
+    text: "Qual é seu maior defeito no trabalho?",
+    options: [
+      { letter: "A", text: "Faz tudo virar drama quando não precisa — mas com boa intenção.", chars: { michael: 3 } },
+      { letter: "B", text: "É tão rígido(a) nas próprias convicções que ignora outros pontos de vista.", chars: { dwight: 3 } },
+      { letter: "C", text: "Às vezes não leva as coisas tão a sério quanto deveria.", chars: { jim: 3 } },
+      { letter: "D", text: "Tem dificuldade de se impor e dizer não.", chars: { pam: 3 } },
+      { letter: "E", text: "Faz o mínimo necessário e não esconde.", chars: { stanley: 3, kevin: 2 } }
+    ]
+  },
+  {
+    text: "No fundo, o que você realmente quer da vida profissional?",
+    options: [
+      { letter: "A", text: "Ser amado, reconhecido e lembrado para sempre.", chars: { michael: 3 } },
+      { letter: "B", text: "Poder, respeito e controle sobre um domínio que você comanda.", chars: { dwight: 3 } },
+      { letter: "C", text: "Equilíbrio — trabalho decente sem abrir mão do que importa de verdade.", chars: { jim: 3 } },
+      { letter: "D", text: "Fazer algo significativo, criativo, que represente quem você é.", chars: { pam: 3 } },
+      { letter: "E", text: "Estabilidade. Pagar as contas e ter paz.", chars: { stanley: 3, toby: 2, kevin: 2 } }
+    ]
+  }
+];
+
+// ============================================================
+//  CHARACTERS
+// ============================================================
+const characters = {
+  michael: {
+    name: "Michael Scott",
+    role: "Gerente Regional · Dunder Mifflin Scranton",
+    emoji: "🤵",
+    desc: "Você é o coração caótico da empresa. Sua maior necessidade é ser amado — e às vezes essa busca por validação vira um espetáculo involuntário. Você tem um talento genuíno para criar conexão emocional, mesmo quando o método é questionável. Por baixo da fachada exagerada existe alguém que se importa profundamente com as pessoas ao redor. Você não é um líder por manual — é por energia, entusiasmo e uma vontade inabalável de fazer as pessoas sentirem que pertencem a algo.",
+    traits: ["Carismático", "Dramático", "Generoso", "Inseguro", "Criativo"],
+    quote: "\"Eu sou um gerente que gosta de se divertir. Às vezes eu brinco muito. Mas quando o negócio é sério, ninguém é mais sério do que eu.\"",
+    quoteAuthor: "Michael Scott"
+  },
+  dwight: {
+    name: "Dwight Schrute",
+    role: "Assistente do Gerente Regional · Fazendeiro · Especialista em Karatê",
+    emoji: "🥋",
+    desc: "Você opera por convicção total. Suas crenças são sua fortaleza — e também sua cela. Você tem uma lealdade impressionante e uma ética de trabalho que envergonha qualquer pessoa normal. Sua lógica pode parecer estranha para os outros, mas faz todo sentido dentro do seu sistema de valores. Você é protetor, determinado e perfeccionista ao extremo. O mundo seria mais organizado — e provavelmente mais seguro — se mais pessoas vissem as coisas do seu jeito.",
+    traits: ["Leal", "Disciplinado", "Rígido", "Determinado", "Orgulhoso"],
+    quote: "\"Identifique o seu inimigo. Destrua o seu inimigo. Lanche.\"",
+    quoteAuthor: "Dwight Schrute"
+  },
+  jim: {
+    name: "Jim Halpert",
+    role: "Representante de Vendas · Tipo que claramente quer mais da vida",
+    emoji: "😏",
+    desc: "Você é observador, irônico e brilhante — e provavelmente mais inteligente do que aparenta no dia a dia. Você não precisa provar nada, e essa segurança discreta é o que te torna magnético. Você joga o jogo do trabalho com leveza, mas quando decide se comprometer de verdade, vai a fundo. Você valoriza autenticidade acima de tudo e tem um radar afiado pra detectar falsidade. Sua maior força é saber quando agir e quando simplesmente... olhar pra câmera.",
+    traits: ["Observador", "Irônico", "Charmoso", "Autêntico", "Subestimado"],
+    quote: "\"Às vezes a melhor parte do meu trabalho é que a cadeira gira.\"",
+    quoteAuthor: "Jim Halpert"
+  },
+  pam: {
+    name: "Pam Beesly",
+    role: "Recepcionista · Artista · Alma da Dunder Mifflin",
+    emoji: "🎨",
+    desc: "Você é a pessoa mais humana da sala. Empática, criativa e frequentemente subestimada — inclusive por você mesmo(a). Você tem uma capacidade de enxergar o que há de melhor nas pessoas que às vezes te faz ignorar o que há de ruim. Mas quando encontra sua voz, é impossível não ouvi-la. Você cresce com o tempo, aprende a se impor, e o que antes parecia timidez é, na verdade, profundidade. Seu coração é genuíno e suas conexões são reais.",
+    traits: ["Empática", "Criativa", "Discreta", "Resiliente", "Genuína"],
+    quote: "\"Acho que às vezes as pessoas têm medo de parecer felizes demais. Eu não tenho mais esse medo.\"",
+    quoteAuthor: "Pam Beesly"
+  },
+  stanley: {
+    name: "Stanley Hudson",
+    role: "Representante de Vendas · Especialista em Palavras Cruzadas",
+    emoji: "📰",
+    desc: "Você já chegou num nível de clareza existencial que a maioria das pessoas nunca vai alcançar. Não tem tempo pra bobagem, política corporativa ou drama desnecessário. Você sabe exatamente o que importa — a família, o prazer simples, a paz de espírito — e defende esse território com uma cara séria que faz todo mundo recuar. Não confunda seu desinteresse com falta de inteligência. Você simplesmente decidiu não desperdiçar energia com o que não vale a pena.",
+    traits: ["Direto", "Pragmático", "Stoico", "Íntegro", "Economicamente honesto"],
+    quote: "\"Não é da sua conta se eu tenho um trabalho secreto. Minha vida pessoal é minha.\"",
+    quoteAuthor: "Stanley Hudson"
+  },
+  angela: {
+    name: "Angela Martin",
+    role: "Chefe de Contabilidade · Guardiã dos Padrões Morais",
+    emoji: "😾",
+    desc: "Você tem padrões elevados — para si mesmo e para todos ao redor. Sua exigência pode intimidar, mas vem de um lugar de comprometimento genuíno. Você sabe o que quer, sabe o que é certo (segundo seus critérios) e não tem paciência pra mediocridade. Por baixo da casca dura existe alguém que se importa profundamente — só que de um jeito que poucas pessoas têm paciência de entender. Você ama com intensidade e cobra com a mesma intensidade.",
+    traits: ["Exigente", "Organizada", "Inflexível", "Dedicada", "Protetora"],
+    quote: "\"Eu não sou difícil de agradar. Só tenho expectativas razoáveis de perfeição.\"",
+    quoteAuthor: "Angela Martin"
+  },
+  ryan: {
+    name: "Ryan Howard",
+    role: "Temp · VP de Vendas · Barista · Startup Founder",
+    emoji: "💼",
+    desc: "Você é ambicioso, inteligente e tem uma relação complicada com o próprio sucesso. Você sabe como vender uma ideia — inclusive a si mesmo — e tem um talento real que às vezes fica escondido atrás de muita performance. Você quer chegar lá, mas nem sempre tem clareza sobre o que é 'lá'. Sua inteligência é real, mas a impulsividade pode ser sua sombra. Quando você encontra propósito genuíno, é imparável.",
+    traits: ["Ambicioso", "Persuasivo", "Volátil", "Inteligente", "Egocêntrico"],
+    quote: "\"Eu não quero ser apenas bom. Quero ser lembrado como revolucionário.\"",
+    quoteAuthor: "Ryan Howard"
+  },
+  kelly: {
+    name: "Kelly Kapoor",
+    role: "Atendimento ao Cliente · Especialista em Cultura Pop",
+    emoji: "💅",
+    desc: "Você vive intensamente — tudo é urgente, tudo é importante, tudo é drama (no bom sentido). Você tem energia contagiante e uma capacidade de criar conexão emocional de forma rápida e genuína. Você ama de verdade, se importa de verdade e sente de verdade. Isso pode parecer excessivo pra quem é menos apaixonado(a), mas para os que te entendem, você é inesquecível. Sua intuição emocional é afiada — só precisa de um pouco mais de filtro na hora de agir.",
+    traits: ["Intensa", "Apaixonada", "Social", "Impulsiva", "Leal"],
+    quote: "\"Eu tenho muita coisa pra falar e muito pouco tempo, então você vai ter que prestar atenção.\"",
+    quoteAuthor: "Kelly Kapoor"
+  },
+  kevin: {
+    name: "Kevin Malone",
+    role: "Contador · Baterista · Filósofo Acidental",
+    emoji: "🍪",
+    desc: "Você vive de um jeito simples e honesto que muita gente subestima. Por baixo de uma aparência despreocupada, existe uma intuição surpreendente e momentos de sabedoria que surgem do nada. Você sabe o que te faz feliz e não perde tempo fingindo que quer outra coisa. Você tem um coração grande, um apetite maior ainda, e uma autenticidade rara. As pessoas que te conhecem de verdade sabem que você é um dos mais genuínos do grupo.",
+    traits: ["Autêntico", "Descomplicado", "Intuitivo", "Honesto", "Generoso"],
+    quote: "\"Por que usar muitas palavras quando poucas funcionam?\"",
+    quoteAuthor: "Kevin Malone"
+  },
+  toby: {
+    name: "Toby Flenderson",
+    role: "RH · Escritor Frustrado · Alma Sensível",
+    emoji: "😔",
+    desc: "Você é mais profundo do que as pessoas percebem. Você se importa com o bem-estar coletivo de forma sincera, mesmo quando ninguém dá crédito. Você tem aspirações que vão além do ambiente em que está, e uma sensibilidade que pode ser confundida com fraqueza — mas não é. Você é resiliente de um jeito quieto. Você aguenta muito, processa muito, sente muito. Quando encontrar um ambiente que reconheça isso, você vai brilhar de um jeito que vai surpreender a todos.",
+    traits: ["Sensível", "Paciente", "Resiliente", "Introspectivo", "Cuidadoso"],
+    quote: "\"Às vezes eu me pergunto se alguém realmente me vê. E então alguém me pede pra sair da sala.\"",
+    quoteAuthor: "Toby Flenderson"
+  }
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+let current = 0;
+let scores = { michael:0, dwight:0, jim:0, pam:0, kevin:0, angela:0, ryan:0, kelly:0, stanley:0, toby:0 };
+let answers = new Array(questions.length).fill(null);
+
+// ============================================================
+//  FUNCTIONS
+// ============================================================
+function startQuiz() {
+  showPage('quiz');
+  renderQuestion();
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  const total = questions.length;
+  const pct = (current / total) * 100;
+
+  document.getElementById('progress-info').textContent = `Pergunta ${current+1} de ${total}`;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('btn-back').disabled = current === 0;
+  document.getElementById('btn-next').textContent = current === total - 1 ? 'Ver Resultado →' : 'Próxima →';
+
+  const area = document.getElementById('question-area');
+  area.innerHTML = `
+    <div class="question-slide">
+      <div class="question-number">Pergunta ${current+1}</div>
+      <div class="question-text">${q.text}</div>
+      <div class="options" id="options-list">
+        ${q.options.map((opt, i) => `
+          <button class="option ${answers[current] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+            <span class="option-letter">${opt.letter}</span>
+            <span class="option-text">${opt.text}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function selectOption(index) {
+  const prev = answers[current];
+  const q = questions[current];
+
+  // Remove previous answer scores
+  if (prev !== null) {
+    const prevChars = q.options[prev].chars;
+    for (const [char, pts] of Object.entries(prevChars)) {
+      scores[char] -= pts;
+    }
+  }
+
+  // Add new answer scores
+  answers[current] = index;
+  const chars = q.options[index].chars;
+  for (const [char, pts] of Object.entries(chars)) {
+    scores[char] += pts;
+  }
+
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.toggle('selected', i === index);
+  });
+}
+
+function goNext() {
+  if (answers[current] === null) {
+    const opts = document.querySelectorAll('.option');
+    opts.forEach(o => { o.style.borderColor = '#c8490a'; });
+    setTimeout(() => opts.forEach(o => { o.style.borderColor = ''; }), 600);
+    return;
+  }
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+    window.scrollTo(0,0);
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+    window.scrollTo(0,0);
+  }
+}
+
+function showResult() {
+  const winner = Object.entries(scores).sort((a,b) => b[1] - a[1])[0][0];
+  const c = characters[winner];
+
+  const html = `
+    <div class="result-reveal">
+      <span class="result-label">Você é...</span>
+      <span class="result-emoji">${c.emoji}</span>
+      <h2 class="result-title">${c.name}</h2>
+      <p class="result-role">${c.role}</p>
+      <div class="result-divider"></div>
+      <p class="result-desc">${c.desc}</p>
+      <p class="traits-title">✦ Seus traços principais</p>
+      <div class="traits">
+        ${c.traits.map(t => `<span class="trait">${t}</span>`).join('')}
+      </div>
+      <div class="quote-box">
+        <p>${c.quote}</p>
+        <cite>— ${c.quoteAuthor}</cite>
+      </div>
+      <button class="retry-btn" onclick="resetQuiz()">↺ Fazer de novo</button>
+    </div>
+  `;
+
+  document.getElementById('result-inner').innerHTML = html;
+  showPage('result');
+}
+
+function resetQuiz() {
+  current = 0;
+  scores = { michael:0, dwight:0, jim:0, pam:0, kevin:0, angela:0, ryan:0, kelly:0, stanley:0, toby:0 };
+  answers = new Array(questions.length).fill(null);
+  showPage('intro');
+}
+</script>
+</body>
+</html>
